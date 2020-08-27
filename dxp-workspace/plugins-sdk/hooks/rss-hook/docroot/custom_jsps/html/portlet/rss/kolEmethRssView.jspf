@@ -1,0 +1,89 @@
+
+<div class="feed-entries">
+
+				<%
+				List entries = feed.getEntries();
+
+				for (int j = 0; j < entries.size(); j++) {
+					SyndEntry entry = (SyndEntry)entries.get(j);
+
+					String entryLink = entry.getLink();
+
+					if (Validator.isNotNull(entryLink) && !HttpUtil.hasDomain(entryLink)) {
+						entryLink = baseURL + entryLink;
+					}
+
+					String author = entry.getAuthor();
+
+					SyndContent content = entry.getDescription();
+
+					List contents = new ArrayList();
+
+					if (content == null) {
+						contents = entry.getContents();
+					}
+					else {
+						contents.add(content);
+					}
+
+					List <SyndEnclosure> enclosures = (List<SyndEnclosure>)entry.getEnclosures();
+
+					String enclosureLink = StringPool.BLANK;
+					String enclosureLinkTitle = entry.getTitle();
+
+					for (SyndEnclosure enclosure : enclosures) {
+						if (Validator.isNotNull(enclosure.getUrl())) {
+							enclosureLink = enclosure.getUrl();
+
+							int pos = enclosureLink.lastIndexOf(StringPool.FORWARD_SLASH);
+
+							if (pos > -1) {
+								enclosureLinkTitle = enclosureLink.substring(pos + 1);
+							}
+							else {
+								enclosureLinkTitle = enclosureLink;
+							}
+
+							break;
+						}
+					}
+				%>
+
+					<div class="feed-entry">
+
+						<p class="feed-entry-title"><a href="<%= entryLink %>" target="_new" style="text-decoration: none"><%= HtmlUtil.escape(entry.getTitle()) + " on " %></a>
+
+							<%
+							for (int k = 0; k < contents.size(); k++) {
+								content = (SyndContent)contents.get(k);
+
+								if ((content != null) && Validator.isNotNull(content.getValue())) {
+									String value = StringUtil.replace(
+										content.getValue(),
+										new String[] {
+											"src=\"/",
+											"href=\"/"
+										},
+										new String[] {
+											"src=\"" + baseURL + "/",
+											"href=\"" + baseURL + "/"
+										});
+							%>
+
+									<%= SanitizerUtil.sanitize(company.getCompanyId(), scopeGroupId, user.getUserId(), null, 0, ContentTypes.TEXT_HTML, Sanitizer.MODE_XSS, value, null) %>
+
+							<%
+								}
+							}
+							%>
+						</p>
+					</div>
+
+				<%
+					if ((j + 1) >= entriesPerFeed) {
+						break;
+					}
+				}
+				%>
+
+			</div>

@@ -1,0 +1,44 @@
+<!-- 
+/**
+ * @author Rajeeva Lochana B R
+ * @version 0.1
+ * 
+ */
+ -->
+<aui:layout cssClass="aui-w100">
+	<aui:column cssClass="aui-w30">
+			<aui:input inlineLabel="left" name="customEventType" id="0" type="radio" value="all events" label="All Events" checked='<%= selCategory.equalsIgnoreCase("All Events") %>' onChange="javascript:getSubEvents(this);"></aui:input>
+			
+			<%
+			int count = 0;
+		 		for (int i=0; i< assetCategories.size(); i++) {
+		 			count = count + 1;
+		 	%>
+		
+			<aui:input inlineLabel="left" name="customEventType"
+				id="<%=String.valueOf(count)%>" type="radio"
+				value="<%=assetCategories.get(i).getName().toLowerCase()%>"
+				label="<%=assetCategories.get(i).getName()%>" checked='<%= selCategory.equalsIgnoreCase(assetCategories.get(i).getName()) %>' onChange="javascript:getSubEvents(this);" />
+			<% 	
+		 		}
+		 	%>
+	</aui:column>
+	<aui:column cssClass="aui-w70">
+		<%
+		
+		if(Validator.isNotNull(selCategory)){
+		
+				String newvocabularyNavigation =  _buildVocabularyNavigation(assetVocabularyCalendar.getVocabularyId(), themeDisplay, selCategory, eventType);
+		
+				if (Validator.isNotNull(newvocabularyNavigation)) {
+		%>
+		
+		<%=newvocabularyNavigation%>
+		
+		<%
+			}
+		}
+		%>
+	</aui:column>
+</aui:layout>
+<br>

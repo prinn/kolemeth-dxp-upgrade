@@ -1,0 +1,87 @@
+<nav class="$nav_css_class" id="navigation">
+	<h1>
+		<span>#language("navigation")</span>
+	</h1>
+
+	<ul>
+		#foreach ($nav_item in $nav_items)
+			#if ($nav_item.isSelected())
+				<li class="selected">
+			#else
+				<li>
+			#end
+				#if ($nav_item.getName() != 'Home')
+					  <a href="$nav_item.getURL()" $nav_item.getTarget()><span>$nav_item.icon() $nav_item.getName()</span></a>
+				#end
+				#if ($nav_item.hasChildren())
+					<ul class="child-menu">
+						#foreach ($nav_child in $nav_item.getChildren())
+							#if ($nav_child.isSelected())
+								<li class="selected">
+							#else
+								<li>
+							#end
+								<a href="$nav_child.getURL()" $nav_child.getTarget()>$nav_child.getName()</a>
+							</li>
+						#end
+					</ul>
+				#end
+			</li>
+		#end
+	</ul>
+</nav>
+
+<a id="toggle" href="javascript:;">
+	<img border="0" id="toggle-menu-image" alt="Menu" src="$images_folder/custom/toggle-menu.png">
+</a>
+
+<nav id="responsive_nav">
+	<ul>			
+			#foreach ($nav_item in $nav_items)	
+			
+				
+				#if ($nav_item.isSelected())
+							<li class="selected">
+				#else
+						<li>
+				#end
+				
+				  #if ($nav_item.getName() != 'Home' && $nav_item.hasChildren())		
+					  #set($pageName = $htmlUtil.escape($nav_item.getName().replaceAll("&amp;","")).replaceAll(" ","-"))	
+					  #set($pageNameId = "-child")	  
+						  <a href="javascript:;" $nav_item.getTarget() id="$pageName"  onClick="javascript:childDisplay(this.id);" ><span>$nav_item.icon() $nav_item.getName()</span>
+						  	 <span style="float:right;"><img id="icon$pageName$pageNameId" src="$images_folder/custom/plus.png"/><span>
+						  </a>
+						<div id="$pageName$pageNameId" class="nav-hide">  
+				 #end
+				
+					#if ($nav_item.getName() != 'Home' && !$nav_item.hasChildren())					
+						  <a href="$nav_item.getURL()" $nav_item.getTarget()><span>$nav_item.icon() $nav_item.getName()</span></a>
+					#end
+				
+				#if ($nav_item.hasChildren())
+					<ul class="child-menu" >
+					#if ($nav_item.isSelected())
+							<li class="selected">
+						#else
+								<li>
+						#end
+						 <a href="$nav_item.getURL()" $nav_item.getTarget()><span>$nav_item.icon() Overview</span></a>
+					</li>	 
+						#foreach ($nav_child in $nav_item.getChildren())
+							#if ($nav_child.isSelected())
+								<li class="selected">
+							#else
+								<li>
+							#end
+								<a href="$nav_child.getURL()" $nav_child.getTarget()>$nav_child.getName()</a>
+							</li>
+						#end
+					</ul>
+					</div>
+				#end
+			</li>
+			#end
+				
+	</ul>
+</nav>

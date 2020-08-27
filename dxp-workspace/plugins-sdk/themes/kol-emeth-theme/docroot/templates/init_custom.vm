@@ -1,0 +1,63 @@
+#*
+This file allows you to override and define new Velocity variables.
+*#
+<script type="text/javascript" src="$javascript_folder/jQuery-1.9.1.js"></script>
+<script type="text/javascript" src="$javascript_folder/jQuery-ui.js"></script>
+<script type="text/javascript" src="$javascript_folder/jquery.ie6blocker.js"></script>
+<script type="text/javascript" src="$javascript_folder/maskedinput.js"></script>
+<script type="text/javascript" src="$javascript_folder/mobile.maskedinput.js"></script>
+
+
+
+<script>
+	var currentPage = window.location.pathname;
+	     $(document).ready(function() {
+	     	var containerWidth = $("#column-1").width()-40;
+			$(".container").css({
+	                    width: containerWidth
+	          }); 
+	     
+	     });
+</script>
+
+<script type="text/javascript" src="$javascript_folder/owlCarouselJs.js"></script>
+
+<script>
+
+    $(document).ready(function() {    	
+
+	      var owl = $("#owl-demo");
+	      
+	      owl.owlCarousel({
+	      	  autoPlay: 3000, //Set AutoPlay to 3 seconds
+		      items : 1, //10 items above 1000px browser width
+		      itemsDesktop : [1000,1], //5 items between 1000px and 901px
+		      itemsDesktopSmall : [900,1], // 3 items betweem 900px and 601px
+		      itemsTablet: [600,1], //2 items between 600 and 0;
+		      itemsMobile : false ,// itemsMobile disabled - inherit from itemsTablet option
+			  navigation : false,
+		      slideSpeed : 300,
+		      paginationSpeed : 400,
+		      singleItem : true      
+	      });
+	
+	      // Custom Navigation Events
+	      $(".next").click(function(){
+	        owl.trigger('owl.next');
+	      })
+	      
+	      $(".prev").click(function(){
+	        owl.trigger('owl.prev');
+	      })
+	      
+	      $(".play").click(function(){
+	        owl.trigger('owl.play',1000);
+	      })
+	      
+	      $(".stop").click(function(){
+	        owl.trigger('owl.stop');
+	      })
+    });
+ </script>
+ 
+ 

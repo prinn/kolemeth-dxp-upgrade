@@ -1,0 +1,384 @@
+/*------------------------------------------------------- responsive styles */
+
+.nav-hide { display: none; }
+.nav-show {	display: block; }
+
+#toggle {
+  display: none;
+  cursor: pointer;
+  overflow: visible; }
+  
+#responsive_nav {
+  background-color: #fff;
+  -webkit-box-shadow: #666 0px 4px 3px;
+  -moz-box-shadow: #666 0px 4px 3px;
+  box-shadow: #666 0px 4px 3px;
+  behavior: url("/kol-emeth-theme/css/PIE.htc");
+  display: none;
+  font-size: 14px;
+  position: absolute;
+  right: 0;
+  top: 121px;
+  z-index: 1000; }
+
+#responsive_nav ul { margin: 0.5em; }
+
+#responsive_nav ul li { display: block; }
+
+#responsive_nav ul li a {
+	background: #fff;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#f7f7f7), to(#e5e5e5));
+	background: -webkit-linear-gradient(#f7f7f7, #e5e5e5);
+	background: -moz-linear-gradient(#f7f7f7, #e5e5e5);
+	background: -ms-linear-gradient(#f7f7f7, #e5e5e5);
+	background: -o-linear-gradient(#f7f7f7, #e5e5e5);
+	background: linear-gradient(#f7f7f7, #e5e5e5);
+	-pie-background: linear-gradient(#f7f7f7, #e5e5e5);
+	behavior: url("/kol-emeth-theme/css/PIE.htc");
+	color: #002467;
+	display: block;
+	margin: 0;
+	padding: 9px 11px;
+	text-decoration: none;
+	text-shadow: 1px 1px #fff; }
+
+#responsive_nav ul li a:hover {
+	background: #e8e8e8;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#ddd), to(#c6c6c6));
+	background: -webkit-linear-gradient(#ddd, #c6c6c6);
+	background: -moz-linear-gradient(#ddd, #c6c6c6);
+	background: -ms-linear-gradient(#ddd, #c6c6c6);
+	background: -o-linear-gradient(#ddd, #c6c6c6);
+	background: linear-gradient(#ddd, #c6c6c6);
+	-pie-background: linear-gradient(#ddd, #c6c6c6);
+	behavior: url("/kol-emeth-theme/css/PIE.htc"); }
+
+#responsive_nav ul.child-menu { margin: 0; }
+
+#responsive_nav ul.child-menu li a {
+	background-color: #e5e5e5;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#dcdcdc), to(#e5e5e5));
+	background: -webkit-linear-gradient(#dcdcdc, #e5e5e5);
+	background: -moz-linear-gradient(#dcdcdc, #e5e5e5);
+	background: -ms-linear-gradient(#dcdcdc, #e5e5e5);
+	background: -o-linear-gradient(#dcdcdc, #e5e5e5);
+	background: linear-gradient(#dcdcdc, #e5e5e5);
+	-pie-background: linear-gradient(#dcdcdc, #e5e5e5);
+	behavior: url("/kol-emeth-theme/css/PIE.htc");
+	border-top: 1px solid #ccc;
+	text-shadow: 1px 1px #fff;
+	cursor: pointer !important;
+	font-weight: normal !important;
+	padding: 7px 15px 7px 25px;
+	/*width: 168px;*/ }
+
+#responsive_nav .child-menu li a:hover, #responsive_nav li a.active {
+	background: #e8e8e8;
+	background: -webkit-gradient(linear, 0 0, 0 bottom, from(#ddd), to(#c6c6c6));
+	background: -webkit-linear-gradient(#ddd, #c6c6c6);
+	background: -moz-linear-gradient(#ddd, #c6c6c6);
+	background: -ms-linear-gradient(#ddd, #c6c6c6);
+	background: -o-linear-gradient(#ddd, #c6c6c6);
+	background: linear-gradient(#ddd, #c6c6c6);
+	-pie-background: linear-gradient(#ddd, #c6c6c6);
+	behavior: url("/kol-emeth-theme/css/PIE.htc"); }
+
+#toggle-search {
+  display: none;
+  cursor: pointer;
+  overflow: visible; }
+
+/* -------------------------------------------------------- responsive images */
+#column-1 .journal-content-article img, #column-2 .journal-content-article img, 
+	#column-3 .journal-content-article img {
+  		max-width: 100% !important;
+  		height: auto !important; }
+
+
+@media (max-width: 1070px) {
+
+	#navigation a {	padding: 6px 20px 6px 0; }
+	
+}
+
+@media (max-width: 1000px) {
+
+	#navigation a {
+		font-size: 1.05em;
+		padding: 6px 18px 6px 0; }
+	
+}
+
+/* Donate now responsive styles */
+@media(min-width: 971px) {
+	
+	/* Thank you and error popups */
+	.ui-dialog {
+		width: 800px !important;
+		top: 100px !important;
+		left: 50% !important;
+		margin-left: -400px;
+	}
+	
+}
+
+@media(max-width: 970px) {
+	
+	.donate-wrapper .float-left {
+		float: none;
+	}
+	
+	.donate-contact { clear: both; }
+	
+	/* Thank you and error popups */
+	.ui-dialog {
+		width: 90% !important;
+		top: 40px !important;
+		left: 5% !important;
+	}
+	
+	/* web form */
+	.kol-emeth-web-form-portlet .form-input-container-float { float: none; }
+}
+
+@media (max-width: 920px) {
+
+	#navigation a {
+		font-size: 1em;
+		padding: 6px 15px 6px 0; }
+	
+	.custom_3columns_20_60_20 #column-1, .custom_3columns_20_60_20 #column-3 {
+		background-color: transparent;
+		float: right; }
+	
+	.custom_3columns_20_60_20 #column-2 { float: left; }
+	
+	.custom_3columns_20_60_20 #column-1 .portlet-column-content { padding-bottom: 0; }
+	
+	.custom_3columns_20_60_20 .aui-w60 { width: 79%; }
+	.custom_3columns_20_60_20 .aui-w20 { width: 20%; }
+	
+	.custom_3columns_20_60_20 .portlet-layout {
+		background: transparent url("../images/custom/sidebar-border.gif") repeat-y 80% top;
+		background-size: 1px; }
+		
+	.custom_3columns_20_60_20 .portlet-layout:before, .custom_3columns_20_60_20 .portlet-layout:after {
+    	bottom: 43px;
+    	left: 0;
+    	position: absolute;
+    	right: 0;
+    	top: 177px;
+    	z-index: -1; }
+    	
+	.custom_3columns_20_60_20 .portlet-layout:after {
+		background: #fff url(../images/custom/sidebar-bg.gif) repeat-y right top;
+		background-size: 20%;
+		content: " "; }
+	
+	.custom_3columns_20_60_20 #column-1, .custom_3columns_20_60_20 #column-3 { border: none; }
+	
+	.portlet-nested-portlets .portlet-layout, .portlet-nested-portlets .portlet-layout:after {
+		background: none; } /* don't show these backgrounds on the nested portlets */
+		
+	.owl-theme .owl-controls { left: 46%; } /* fix for placement of circles on carousel */
+
+}
+
+@media (max-width: 870px) {
+	
+	#banner { background: #F2FDF7 url("../images/custom/tree-banner_opt.jpeg") no-repeat 0 -20px; }
+	#heading { height: 120px; }
+	.logo { padding-top: 17px; }
+	
+	.logo, #navigation li:first-child a, 
+		.portlet-column-content-only, .ltr .portlet-column-content-first, .rtl .portlet-column-content-last {
+		padding-left: 20px; }
+		
+	.portlet-column-content-only, .ltr .portlet-column-content-last, .rtl .portlet-column-content-first {
+	padding-right: 20px; }
+	
+	.portlet-column-content { padding: 10px 20px; }
+	
+	.custom_3columns_20_60_20 .portlet-layout:before, .custom_3columns_20_60_20 .portlet-layout:after {
+	 	top: 120px;	}
+	 
+	.portlet-nested-portlets .portlet-column-content { padding: 0 !important; }
+	.portlet-nested-portlets .portlet-column { padding: 0 10px !important; }
+	.portlet-nested-portlets .portlet-column-first { padding: 0 10px 0 0 !important; }
+	.portlet-nested-portlets .portlet-column-last { padding: 0 0 0 10px !important; } /* for nested portlets */
+	
+	.nav-menu li { padding: 4px 0; }
+
+	/* ----------------------------------------------------------------- tablet nav toggle */
+	#navigation { display: none; }
+
+	#toggle {
+ 		display: inline !important;
+	  	position: absolute;
+  		right: 20px;
+  		top: 45px; }
+
+	#responsive_nav { width: 275px; }
+	
+	/* ----------------------------------------------------------------- tablet search toggle */
+	#search {
+		background-color: #fff;
+		-webkit-box-shadow: #666 0px 4px 3px;
+  		-moz-box-shadow: #666 0px 4px 3px;
+ 		box-shadow: #666 0px 4px 3px;
+  		behavior: url("/kol-emeth-theme/css/PIE.htc");
+		display: none;
+		float: none;
+		margin: 0;
+		padding: 0.5em;
+       	position: absolute;
+    	right: 0;
+    	top: 121px;
+  		z-index: 2000; }
+
+	#toggle-search {
+ 		display: inline !important;
+	  	position: absolute;
+  		right: 75px;
+  		top: 45px; }
+  		
+  	.owl-theme .owl-controls { left: 45%; } /* fix for placement of circles on carousel */
+
+}
+
+
+@media (min-width: 870px) {
+	
+	#responsive_nav { display: none !important; }
+
+}
+
+@media (max-width: 790px) {
+
+	.portlet-calendar ul.aui-tabview-list { display: none; }
+	
+	.owl-theme .owl-controls { left: 44%; } /* fix for placement of circles on carousel */
+	
+	/* search page */
+	.portlet-search .search-layout .search-layout-content .result .asset-entry .asset-entry-summary {
+    	-ms-word-break: break-all;
+	    word-break: break-all;
+	    word-break: break-word;
+	    -webkit-hyphens: auto;
+	       -moz-hyphens: auto;
+	        -ms-hyphens: auto;
+	            hyphens: auto;
+    }
+
+}
+
+@media (max-width: 680px) {
+
+	.customNavigation:first-child a { display: none; } /* hide carousel arrows */
+
+}
+
+@media (max-width: 650px) {
+	
+	.aui-w15, .aui-w20, .aui-w25, .aui-w28, .aui-w30, .aui-w50, .aui-w60, .aui-w70, .aui-w80, .aui-w100 { 
+		width: 100% !important; }
+	
+	.portlet-layout, .portlet-column { display: block; }
+	
+	.custom_3columns_20_60_20 #column-1, .custom_3columns_20_60_20 #column-3 { background-color: #f5f5f5; }
+	
+	.custom_3columns_20_60_20 #column-2, .custom_3columns_20_60_20 #column-3, 
+		.custom_2columns_80_20 #column-2 { border-left: none; border-right: none; }
+		
+	.custom_3columns_20_60_20 #column-2, .custom_3columns_20_60_20 #column-3, 
+		.custom_2columns_80_20 #column-2 { border-top: 1px solid #b2b2b2; }
+	
+	.custom_3columns_20_60_20 .portlet-layout, .custom_3columns_20_60_20 .portlet-layout:after {
+		background-image: none; }
+	
+	.custom_3columns_20_60_20 .portlet-layout:before,
+		.custom_3columns_20_60_20 .portlet-layout:after { z-index: -1; }
+	
+	.custom_3columns_20_60_20 #column-1 { display: none; } /* hide nav portlet from 3 col layout */
+	
+	#footer li { padding-right: 35px; }
+	
+	.owl-theme .owl-controls { left: 43%; } /* fix for placement of circles on carousel */
+	
+	.donate-wrapper .donate-total .aui-w50 { margin-left: 0; } /* Donate now responsive styles */
+	
+}
+
+
+
+@media(max-width: 500px) { 
+
+	.donate-fund .taglib-icon-help {
+		display: block;
+	}
+
+}
+
+@media (max-width: 480px) {
+	
+	#responsive_nav { width: 100%; }
+	
+	.logo img {
+    	height: auto;
+    	width: 90%; }
+	
+	.leadership-person img { padding: 0 20px 10px 0; }
+	
+	.leadership-person p { padding-left: 0; }
+	
+	.kol-emeth-web-form-portlet td {
+		display: inline-block;
+		margin: 0 15px 0 0; } /* stack form fields */
+		
+	.kol-emeth-donate-now-portlet #recaptcha_table td {
+		display: table-cell;
+		margin: 0; } /* stack form fields, but not on the captcha table */
+		
+	.kol-emeth-web-form-portlet input, .kol-emeth-web-form-portlet select,
+		.kol-emeth-web-form-portlet text-area { max-width: 100% !important; }
+	
+	#footer li {
+		background-color: #f1f1f1;
+    	border: 1px solid #b2b2b2;
+	    display: inline-block;
+    	margin: 0 1% 3%;
+	    padding: 2% 0;
+	    width: 40%; }
+
+    #footer li:first-child { width: 82%; }
+    
+    #footer li:hover { background-color: #e8e8e8; }
+    
+    .owl-theme .owl-controls { left: 42%; } /* fix for placement of circles on carousel */
+    
+    /* search page */
+    .portlet-search .menu-column .search-layout-content .menu { width: 100%; }
+    
+    .portlet-search .search-layout .search-layout-content .result {
+    	width: 100%;
+    	padding-left: 0;
+    }
+    
+}
+
+
+@media (max-width: 400px) {
+
+	.logo { padding-top: 28px; }
+	
+	.logo img {
+    	height: auto;
+    	width: 70%; }
+    	
+    .owl-theme .owl-controls { left: 39%; } /* fix for placement of circles on carousel */
+
+	.donate-fund .aui-field-content {
+		float: none;
+	}
+
+}

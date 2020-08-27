@@ -1,0 +1,163 @@
+<%--
+/**
+ * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+
+<%@page import="com.liferay.portal.kernel.util.CalendarFactoryUtil"%>
+<%@page import="java.util.Calendar"%>
+<%@page import="com.liferay.portal.kernel.util.ListUtil"%>
+<%@page import="com.liferay.portlet.calendar.service.CalEventLocalServiceUtil"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="com.liferay.portal.kernel.util.Time"%>
+<%@page import="java.util.List"%>
+<%@page import="com.liferay.portal.kernel.util.Validator"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.Criterion"%>
+<%@page import="com.liferay.portal.kernel.util.PortalClassLoaderUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQuery"%>
+<%@page import="com.liferay.portlet.calendar.model.CalEvent"%>
+<%
+Calendar currCalendar = CalendarFactoryUtil.getCalendar(timeZone, locale);	
+		 /********************************** Customization start ******************************************/
+		List<CalEvent> newresults = new ArrayList<CalEvent>(); 	
+			if(Validator.isNotNull(DynamicQueryFactoryUtil.forClass(CalEvent.class,PortalClassLoaderUtil.getClassLoader()))){
+				DynamicQuery repetedEventDynamicQuery = DynamicQueryFactoryUtil.forClass(CalEvent.class,PortalClassLoaderUtil.getClassLoader()); 
+				Criterion repetedEventGroupIdCriterion = RestrictionsFactoryUtil.eq("groupId", assetEntry.getGroupId());
+				Criterion repetedEventCriterion = RestrictionsFactoryUtil.like("repeating", true);
+				Criterion repetedEventRecurrence = RestrictionsFactoryUtil.like("recurrence", "%\"until\":null%");
+				
+				repetedEventDynamicQuery.add(repetedEventGroupIdCriterion);
+				
+				if(Validator.isNotNull(upcomingType)){			
+						Criterion repetedEventTypeCriterion = RestrictionsFactoryUtil.like("type","%"+ upcomingType.toLowerCase() +"%");
+						repetedEventDynamicQuery.add(repetedEventTypeCriterion);
+				}
+				
+				repetedEventDynamicQuery.add(repetedEventCriterion);
+			    repetedEventDynamicQuery.add(repetedEventRecurrence);
+				
+				List<CalEvent>   repetedCalEvents  =   CalEventLocalServiceUtil.dynamicQuery(repetedEventDynamicQuery);
+				 
+			 //repeted event with end date dynamicQuery 		 
+			    DynamicQuery repetedEndEventDynamicQuery = DynamicQueryFactoryUtil.forClass(CalEvent.class,PortalClassLoaderUtil.getClassLoader()); 
+				Criterion repetedEndEventGroupIdCriterion = RestrictionsFactoryUtil.eq("groupId", assetEntry.getGroupId());
+				Criterion repetedEventEndDateCriterion = RestrictionsFactoryUtil.ge("endDate", Time.getDate(currCalendar.getTime(), timeZone));
+				Criterion repetedEndEventRepeatingCriterion = RestrictionsFactoryUtil.like("repeating", true);
+				Criterion repetedEndEventRecurrence = RestrictionsFactoryUtil.like("recurrence", "%\"until\":{%");
+				
+				repetedEndEventDynamicQuery.add(repetedEndEventGroupIdCriterion);
+				
+				if(Validator.isNotNull(upcomingType)){			
+						Criterion repetedEndEventTypeCriterion = RestrictionsFactoryUtil.like("type","%"+ upcomingType.toLowerCase()+"%");
+						repetedEndEventDynamicQuery.add(repetedEndEventTypeCriterion);
+				}
+				repetedEndEventDynamicQuery.add(repetedEndEventRepeatingCriterion);
+				repetedEndEventDynamicQuery.add(repetedEventEndDateCriterion);
+				repetedEndEventDynamicQuery.add(repetedEndEventRecurrence);
+
+			    List<CalEvent>   repetedEndCalEvents  =   CalEventLocalServiceUtil.dynamicQuery(repetedEndEventDynamicQuery);			 
+				 
+				
+				// non-repeted event dynamicQuery
+				
+				DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(CalEvent.class,PortalClassLoaderUtil.getClassLoader()); 
+				Criterion groupIdCriterion = RestrictionsFactoryUtil.eq("groupId", assetEntry.getGroupId());
+				Criterion startDateCriterion = RestrictionsFactoryUtil.ge("startDate", Time.getDate(currCalendar.getTime(), timeZone));
+				Criterion repeatingCriterion = RestrictionsFactoryUtil.eq("repeating", false);
+			
+				dynamicQuery.add(groupIdCriterion);
+				if(Validator.isNotNull(upcomingType)){			
+						Criterion typeCriterion = RestrictionsFactoryUtil.like("type","%"+ upcomingType.toLowerCase()+"%");
+						dynamicQuery.add(typeCriterion);
+				}
+				
+				dynamicQuery.add(repeatingCriterion);
+				dynamicQuery.add(startDateCriterion);
+				
+				List<CalEvent>   nonRepetedcalEvents  =   CalEventLocalServiceUtil.dynamicQuery(dynamicQuery);
+				 //all calevents
+				 List<CalEvent> calEvents = new ArrayList<CalEvent>();
+					 calEvents.addAll(repetedCalEvents);
+					 calEvents.addAll(repetedEndCalEvents);
+					 calEvents.addAll(nonRepetedcalEvents);
+				 
+				searchContainer.setTotal(calEvents.size());
+				
+			newresults =	ListUtil.sort(calEvents);
+				newresults = ListUtil.subList(newresults, searchContainer.getStart(), searchContainer.getEnd());
+
+			/********************************** Customization end ******************************************/
+				}
+				searchContainer.setResults(newresults);
+				searchContainer.setTotal(newresults.size());
+				total = newresults.size();
+				newtotal = newresults.size();
+int count = 0;
+request.setAttribute("view.jsp-results", newresults);
+	for (int i = 0; i < newresults.size(); i++) {
+
+	String className = PortalUtil.getClassName(assetEntry.getClassNameId());
+	long classPK = assetEntry.getClassPK();
+	
+	assetEntry = AssetEntryLocalServiceUtil.getEntry(className, classPK);
+
+	AssetRendererFactory assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(className);
+
+	if (assetRendererFactory == null) {
+		continue;
+	}
+
+	AssetRenderer assetRenderer = null;
+
+	try {
+		assetRenderer = assetRendererFactory.getAssetRenderer(classPK);
+	}
+	catch (Exception e) {
+		if (_log.isWarnEnabled()) {
+			_log.warn(e, e);
+		}
+	}
+
+	if ((assetRenderer == null) || !assetRenderer.isDisplayable()) {
+		continue;
+	}
+
+	String title = assetRenderer.getTitle(locale);
+
+	boolean show = true;
+	boolean print = false;
+
+	request.setAttribute("view.jsp-assetEntryIndex", new Integer(i));
+	
+
+	request.setAttribute("view.jsp-assetEntry", assetEntry);
+	request.setAttribute("view.jsp-assetRendererFactory", assetRendererFactory);
+	request.setAttribute("view.jsp-assetRenderer", assetRenderer);
+
+	request.setAttribute("view.jsp-title", title);
+
+	request.setAttribute("view.jsp-show", new Boolean(show));
+	request.setAttribute("view.jsp-print", new Boolean(print));
+
+	try {
+%>
+
+		<%@ include file="/html/portlet/asset_publisher/view_display.jspf" %>
+
+<%
+	}
+	catch (Exception e) {
+		_log.error(e.getMessage());
+	}}%>

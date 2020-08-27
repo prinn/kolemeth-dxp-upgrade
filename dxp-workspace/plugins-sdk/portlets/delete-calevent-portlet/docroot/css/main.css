@@ -1,0 +1,9 @@
+.loader-message{
+	color: #000;
+	position: fixed;
+	left: 50%;
+	font-size: 15px;
+	top: 50%;
+	margin-left: 0 auto;
+	z-index: 100009;
+}

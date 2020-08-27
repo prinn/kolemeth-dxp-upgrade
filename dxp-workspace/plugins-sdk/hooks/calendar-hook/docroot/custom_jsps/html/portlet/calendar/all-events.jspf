@@ -1,0 +1,192 @@
+<%--
+/**
+ * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+
+<%@page import="java.util.Arrays"%>
+<%@page import="com.liferay.portal.kernel.util.Validator"%>
+<%@page import="com.liferay.portal.kernel.util.PortalClassLoaderUtil"%>
+<%@page import="com.liferay.portal.kernel.util.GetterUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.Criterion"%>
+<%@page import="com.liferay.portlet.calendar.model.CalEvent"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQuery"%>
+<%@page import="com.liferay.portal.kernel.util.ListUtil"%>
+<%@page import="com.liferay.portal.kernel.util.CalendarFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil"%>
+<%@page import="java.text.Format"%>
+<%@page import="java.util.Calendar"%>
+<%@page import="com.liferay.portlet.calendar.service.CalEventLocalServiceUtil"%>
+
+
+<%
+Calendar currCalendar = CalendarFactoryUtil.getCalendar(timeZone, locale);
+Format dateFormatForEvents = FastDateFormatFactoryUtil.getSimpleDateFormat("dd-MM-yyyy", locale);
+PortletURL iteratorURL = PortletURLUtil.clone(portletURL, renderResponse);
+
+List<String> headerNames = new ArrayList<String>();
+
+headerNames.add("date");
+headerNames.add("time");
+headerNames.add("title");
+headerNames.add("type");
+headerNames.add("details");
+headerNames.add(StringPool.BLANK);
+
+SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, iteratorURL, headerNames, null);
+
+int total = CalEventServiceUtil.getEventsCount(scopeGroupId, eventType);
+searchContainer.setTotal(total);
+
+List results = CalEventLocalServiceUtil.getEvents(scopeGroupId, eventTypes, searchContainer.getStart(), searchContainer.getEnd());
+
+searchContainer.setResults(results);
+
+List resultRows = searchContainer.getResultRows();
+
+for (int i = 0; i < results.size(); i++) {
+	CalEvent event = (CalEvent)results.get(i);
+
+	event = event.toEscapedModel();
+
+	ResultRow row = new ResultRow(event, event.getEventId(), i);
+
+	PortletURL rowURL = renderResponse.createRenderURL();
+
+	rowURL.setParameter("struts_action", "/calendar/view_event");
+	rowURL.setParameter("redirect", currentURL);
+	rowURL.setParameter("eventId", String.valueOf(event.getEventId()));
+
+	// Date
+
+	if (event.isTimeZoneSensitive()) {
+		row.addText(dateFormatDate.format(Time.getDate(event.getStartDate(), timeZone)), rowURL);
+	}
+	else {
+		row.addText(dateFormatDate.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())), rowURL);
+	}
+
+	// Time
+
+	boolean allDay = CalUtil.isAllDay(event, timeZone, locale);
+
+	if (allDay) {
+		row.addText(LanguageUtil.get(pageContext, "all-day"), rowURL);
+	}
+	else {
+		if (event.isTimeZoneSensitive()) {
+			row.addText(
+				dateFormatTime.format(Time.getDate(event.getStartDate(), timeZone)) + " &#150; " + dateFormatTime.format(Time.getDate(CalUtil.getEndTime(event), timeZone)),
+				rowURL);
+		}
+		else {
+			row.addText(
+				dateFormatTime.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())) + " &#150; " + dateFormatTime.format(Time.getDate(CalUtil.getEndTime(event), TimeZoneUtil.getDefault())),
+				rowURL);
+		}
+	}
+
+	// Title and type
+
+	row.addText(event.getTitle(), rowURL);
+	row.addText(LanguageUtil.get(pageContext, HtmlUtil.unescape(event.getType())), rowURL);
+
+	// Details
+
+	row.addJSP("left", SearchEntry.DEFAULT_VALIGN, "/html/portlet/calendar/view_event_recurrence.jsp");
+
+	// Action
+
+	row.addJSP("right", SearchEntry.DEFAULT_VALIGN, "/html/portlet/calendar/event_action.jsp");
+
+	// Add result row
+
+	resultRows.add(row);
+}
+%>
+
+<c:choose>
+			<c:when test='<%= enableKolEmethCalendar %>'>
+			
+				<%@ include file="/html/portlet/calendar/categoryFilter.jspf" %>
+				
+			</c:when>
+</c:choose>
+
+<c:if test="<%= CalendarPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_EVENT) %>">
+	<div>
+		<portlet:renderURL var="editEventURL">
+			<portlet:param name="struts_action" value="/calendar/edit_event" />
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="backURL" value="<%= currentURL %>" />
+			<portlet:param name="month" value="<%= String.valueOf(selMonth) %>" />
+			<portlet:param name="day" value="<%= String.valueOf(selDay) %>" />
+			<portlet:param name="year" value="<%= String.valueOf(selYear) %>" />
+		</portlet:renderURL>
+
+		<aui:button href="<%= editEventURL %>" value="add-event" />
+	</div>
+
+	<br />
+</c:if>
+
+<liferay-ui:search-iterator searchContainer="<%= searchContainer %>" />
+
+<%
+PortalUtil.setPageSubtitle(LanguageUtil.get(pageContext, "events"), request);
+%>
+
+<script type="text/javascript">
+var namespace = "<portlet:namespace/>";
+var currentpath = '<%=urlWithoutAnchor.toString() %>';
+	function getSubEvents(obj) {
+
+		AUI()
+				.use(
+						'node',
+						function(A) {
+							var elementValue = A.one("#" + obj.id).val();
+							if(elementValue == "all events"){
+								location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=";
+							}else{
+								if(A.one("#" + elementValue) != null){
+									var sel = A.one("#" + elementValue).val();
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel ;
+								}else{
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + elementValue ;
+								}
+							}
+						});
+	}
+	
+	
+	function getSelSubEvents(obj){
+		var elementValue = '<%=selCategory%>';
+		AUI()
+		.use(
+				'node',
+				function(A) {
+					var sel = A.one("#" + obj.id).val();
+					if(A.one("#" + sel) != null){
+						sel = A.one("#" + sel).val();
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel;
+					}else{
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + sel;
+					}
+					
+				});
+		
+	}
+</script>

@@ -1,0 +1,25 @@
+
+.upcoming-title {
+	margin-top: 0;
+    border-bottom: 1px solid #DDDDDD;
+    margin-bottom: 0.7em;
+    margin-right: 8px;
+    margin-top: 0em;
+    padding-bottom: 1px;    
+    font-weight:normal;
+    color: #002467
+}
+
+.upcoming-title a {
+	text-decoration: none;
+}
+/* .upcoming-content {
+    clear: right;
+    margin-bottom: 10px;
+    margin-left: 25px;
+    margin-right: 10px;
+} */
+
+.upcoming-title a{
+	color: #002467;
+}

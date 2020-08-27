@@ -1,0 +1,325 @@
+<%--
+/**
+ * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+
+<%@page import="java.util.TimeZone"%>
+<%@page import="com.liferay.portlet.PortletResponseImpl"%>
+<%@page import="com.liferay.portlet.PortletURLImpl"%>
+<%@page import="java.util.Arrays"%>
+<%@page import="com.liferay.portal.kernel.util.Validator"%>
+<%@page import="com.liferay.portal.kernel.util.PortalClassLoaderUtil"%>
+<%@page import="com.liferay.portal.kernel.util.GetterUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.Criterion"%>
+<%@page import="com.liferay.portlet.calendar.model.CalEvent"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.dao.orm.DynamicQuery"%>
+<%@page import="com.liferay.portal.kernel.util.ListUtil"%>
+<%@page import="com.liferay.portal.kernel.util.CalendarFactoryUtil"%>
+<%@page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil"%>
+<%@page import="java.text.Format"%>
+<%@page import="java.util.Calendar"%>
+<%@page import="com.liferay.portlet.calendar.service.CalEventLocalServiceUtil"%>
+
+<style>
+/* --------------------------------------------------------- Calendar portlet */
+.portlet-calendar table.taglib-search-iterator tr.results-header { display: none; }
+
+.portlet-calendar .results-grid { border: none; }
+
+.portlet-calendar table.taglib-search-iterator tr td {
+	border: none;
+	display: block;
+	padding: 0;
+	float: left;
+	clear: both;
+	width: 100%; }
+
+.portlet-calendar .results-row.alt td, .portlet-calendar .results-row.hover td { background-color: #fff; }
+
+.portlet-calendar .taglib-search-iterator td.align-right {
+	margin-bottom: 8px;
+	text-align: left; }
+
+.portlet-calendar .lfr-actions {
+	float: left;
+	margin-bottom: 8px; }
+
+.portlet-calendar tr.results-row td.last { margin: 8px 0 12px; }
+
+</style>
+
+
+<%
+timeZone = TimeZone.getTimeZone("CST");
+Calendar cal = CalendarFactoryUtil.getCalendar(timeZone, locale);
+Calendar tempCal = (Calendar) cal.clone();
+
+		 /**********************************Start cloning Repeating events to sort list ********************************************************/
+int currentDay = 0;
+int maxDayOfMonth = 0;
+List<CalEvent> allCalEvents = new ArrayList<CalEvent>();
+portletURL.setParameter("selCategory", selCategory);
+portletURL.setParameter("eventType", eventType);
+
+
+for(int m = 0; m <= setDuration; m++){
+	tempCal.set(Calendar.MONTH, cal.get(Calendar.MONTH));
+	tempCal.set(Calendar.YEAR, cal.get(Calendar.YEAR));
+	tempCal.add(Calendar.MONTH, m);
+	
+	
+	
+	currentDay = tempCal.get(Calendar.DATE);
+
+	maxDayOfMonth = tempCal.getActualMaximum(Calendar.DATE);
+			
+		for (int i = currentDay; i <= maxDayOfMonth; i++) {
+			
+			int month = tempCal.get(Calendar.MONTH);
+			int date = tempCal.get(Calendar.DATE);
+			tempCal.set(Calendar.DATE, i);
+			List<CalEvent> events = CalEventServiceUtil.getEvents(scopeGroupId, tempCal, eventTypes);
+			
+			events = ListUtil.sort(events, new EventTimeComparator(timeZone, locale));
+			 for(int j=0; j < events.size();j++){
+				 
+				 
+				CalEvent currentEvent = events.get(j);
+				
+				 boolean noDisplayEvent = false;
+					
+				Date startDate = null;
+				if(currentEvent.isRepeating()){
+					CalEvent cloneCurrentEvent =(CalEvent) currentEvent.clone();
+					
+					Calendar repeatingEventCal = CalendarFactoryUtil.getCalendar(timeZone, locale);
+					repeatingEventCal.setTime(currentEvent.getStartDate());
+					
+					repeatingEventCal.set(Calendar.MONTH, tempCal.get(Calendar.MONTH));
+					repeatingEventCal.set(Calendar.YEAR, tempCal.get(Calendar.YEAR));
+					repeatingEventCal.set(Calendar.DATE, i);
+														
+					cloneCurrentEvent.setStartDate(repeatingEventCal.getTime());
+					int year = repeatingEventCal.get(Calendar.YEAR);
+					try{
+						String[] noEventDates =  (currentEvent.getExpandoBridge().getAttribute("no-event-date-value")).toString().split(",");
+
+						for(int ii = 0 ; ii < noEventDates.length ; ii++){	
+							if(Validator.isNotNull(noEventDates[ii])){
+								DateFormat formatter = new SimpleDateFormat("mm/dd/yyyy"); 
+								Date date1 = (Date)formatter.parse(noEventDates[ii]);
+								String noEventDay = noDisplayDayFormat.format(date1).toString();
+								String noEventMonth = noDisplayMonthFormat.format(date1).toString();
+								String noEventYear = noDisplayYearFormat.format(date1).toString();
+								int monthIncByOne = month + 1;
+									if(noEventDay.equals(String.valueOf(i).format("%02d", i))
+											&& noEventMonth.equals(String.valueOf(monthIncByOne).format("%02d", monthIncByOne))
+											&& noEventYear.equals(String.valueOf(year))){
+										noDisplayEvent = true;
+									}
+							}
+						}}catch(Exception exception){
+							exception.printStackTrace();
+						}
+					
+					if(!noDisplayEvent && !cloneCurrentEvent.getStartDate().before(new Date())){
+						allCalEvents.add(cloneCurrentEvent);
+					}
+										
+				}else{
+					if(!currentEvent.getStartDate().before(new Date())){
+						allCalEvents.add(currentEvent);
+					}
+				}
+		}// third For Loop Ends here
+				
+	}// second For Loop Ends here
+	
+	tempCal.set(Calendar.DATE, 1);
+
+}// first For Loop Ends here
+/**********************************End cloning Repeating events to sort list ********************************************************/
+%>
+
+<%
+//Calendar currCalendar = CalendarFactoryUtil.getCalendar(timeZone, locale);
+PortletURL iteratorURL = PortletURLUtil.clone(portletURL, renderResponse);
+
+List<String> headerNames = new ArrayList<String>();
+
+headerNames.add("date");
+headerNames.add("time");
+headerNames.add("title");
+headerNames.add("type");
+headerNames.add("details");
+headerNames.add(StringPool.BLANK);
+
+SearchContainer searchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, iteratorURL, headerNames, null);
+
+searchContainer.setTotal(allCalEvents.size());
+List results =	ListUtil.sort(allCalEvents);
+results = ListUtil.subList(results, searchContainer.getStart(), searchContainer.getEnd());
+searchContainer.setResults(results);
+
+List resultRows = searchContainer.getResultRows();
+
+for (int i = 0; i < results.size(); i++) {
+	CalEvent event = (CalEvent)results.get(i);
+	event = event.toEscapedModel();
+
+	ResultRow row = new ResultRow(event, event.getEventId(), i);
+
+	PortletURL rowURL = renderResponse.createRenderURL();
+
+	rowURL.setParameter("struts_action", "/calendar/view_event");
+	rowURL.setParameter("redirect", currentURL);
+	rowURL.setParameter("eventId", String.valueOf(event.getEventId()));
+	rowURL.setParameter("startDate", event.isTimeZoneSensitive() ? dateFormatDate.format(Time.getDate(event.getStartDate(), timeZone)) : dateFormatDate.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())) );
+	rowURL.setParameter("selCategory", selCategory);
+	rowURL.setParameter("eventType", eventType);
+	// Date
+	
+
+	if (event.isTimeZoneSensitive()) {
+		
+		row.addText(dateFormatDate.format(Time.getDate(event.getStartDate(), timeZone)), rowURL);
+		
+	}
+	else {
+	
+		row.addText(dateFormatDate.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())), rowURL);
+	}
+
+	// Time
+
+	boolean allDay = CalUtil.isAllDay(event, timeZone, locale);
+
+	if (allDay) {
+		row.addText(LanguageUtil.get(pageContext, "all-day"), rowURL);
+	}
+	else {
+		if (event.isTimeZoneSensitive()) {
+			row.addText(
+				dateFormatTime.format(Time.getDate(event.getStartDate(), timeZone)) + " &#150; " + dateFormatTime.format(Time.getDate(CalUtil.getEndTime(event), timeZone)),
+				rowURL);
+		}
+		else {
+			row.addText(
+				dateFormatTime.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())) + " &#150; " + dateFormatTime.format(Time.getDate(CalUtil.getEndTime(event), TimeZoneUtil.getDefault())),
+				rowURL);
+		}
+	}
+
+	// Title and type
+
+	row.addText(event.getTitle(), rowURL);
+	row.addText(LanguageUtil.get(pageContext, HtmlUtil.unescape(event.getType())), rowURL);
+
+	// Details
+
+	row.addJSP("left", SearchEntry.DEFAULT_VALIGN, "/html/portlet/calendar/view_event_recurrence.jsp");
+
+	// Action
+
+	row.addJSP("right", SearchEntry.DEFAULT_VALIGN, "/html/portlet/calendar/event_action.jsp");
+
+	// Add result row
+
+	resultRows.add(row);
+}
+%>
+
+<c:choose>
+			<c:when test='<%= enableKolEmethCalendar %>'>
+			
+				<%@ include file="/html/portlet/calendar/categoryFilter.jspf" %>
+				
+			</c:when>
+</c:choose>
+
+<c:if test="<%= CalendarPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_EVENT) %>">
+	<div>
+		<portlet:renderURL var="editEventURL">
+			<portlet:param name="struts_action" value="/calendar/edit_event" />
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="backURL" value="<%= currentURL %>" />
+			<portlet:param name="month" value="<%= String.valueOf(selMonth) %>" />
+			<portlet:param name="day" value="<%= String.valueOf(selDay) %>" />
+			<portlet:param name="year" value="<%= String.valueOf(selYear) %>" />
+			<portlet:param name="selCategory" value="<%= selCategory %>" />
+			<portlet:param name="eventType" value="<%= eventType %>" />
+		</portlet:renderURL>
+
+		<aui:button href="<%= editEventURL %>" value="add-event" />
+	</div>
+
+	<br />
+</c:if>
+<%      
+		  iteratorURL.setParameter("selCategory", selCategory);
+          iteratorURL.setParameter("eventType", eventType);
+
+          searchContainer.setIteratorURL(iteratorURL);  
+          
+ %>
+<liferay-ui:search-iterator searchContainer="<%= searchContainer %>" />
+
+<%
+PortalUtil.setPageSubtitle(LanguageUtil.get(pageContext, "events"), request);
+%>
+
+<script type="text/javascript">
+var namespace = "<portlet:namespace/>";
+var currentpath = '<%=urlWithoutAnchor.toString() %>';
+	function getSubEvents(obj) {
+
+		AUI()
+				.use(
+						'node',
+						function(A) {
+							var elementValue = A.one("#" + obj.id).val();
+							if(elementValue == "all events"){
+								location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=";
+							}else{
+								if(A.one("#" + elementValue) != null){
+									var sel = A.one("#" + elementValue).val();
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel ;
+								}else{
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + elementValue ;
+								}
+							}
+						});
+	}
+	
+	
+	function getSelSubEvents(obj){
+		var elementValue = '<%=selCategory%>';
+		AUI()
+		.use(
+				'node',
+				function(A) {
+					var sel = A.one("#" + obj.id).val();
+					if(A.one("#" + sel) != null){
+						sel = A.one("#" + sel).val();
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel;
+					}else{
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + sel;
+					}
+					
+				});
+		
+	}
+</script>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+#parse ($init)
+
+<html class="#language("lang.dir")" dir="#language("lang.dir")" lang="$w3c_language_id">
+
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" >
+	<title>$the_title - $company_name</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	$theme.include($top_head_include)
+	<script type="text/javascript" charset="utf-8">
+	AUI().use('aui-viewport');
+</script>
+</head>
+
+<body class="$css_class">
+
+$theme.include($body_top_include)
+
+#if ($is_signed_in && $permissionChecker.isOmniadmin())
+	#dockbar()
+#end
+
+<div id="wrapper">
+		<header id="banner" role="banner">
+		<div id="heading">
+											
+				<a id="toggle-search" href="javascript:;">
+					<img border="0" id="toggle-search-image" alt="search" src="$images_folder/custom/toggle-search.png">
+				</a>
+				
+				<div id="search"> 
+					#set ($search_render_url = $portletURLFactory.create($request, "3", $theme_display.getLayout().getPlid(), "RENDER_PHASE"))
+					<form onsubmit="ctem_3_search(); return false;" name="ctem_3_fm" method="get" action="$search_render_url"> 	
+					<input type="hidden" value="3" name="p_p_id">
+					<input type="hidden" value="0" name="p_p_lifecycle">
+					<input type="hidden" value="maximized" name="p_p_state">
+					<input type="hidden" value="view" name="p_p_mode">
+					<input type="hidden" value="/search/search" name="_3_struts_action">
+					<input type="hidden" value="$theme_display.getURLCurrent()" name="_3_redirect"> 
+					<input type="hidden" value="0" name="_3_groupId">	
+						<input type="text" value="" size="30" name="_3_keywords" class=""> 
+						<input type="image" border="0" align="absmiddle" title="Search" src="$images_folder/common/search.png"> 	
+					</form>
+				</div>	
+			
+			<h1 class="site-title">
+				<a class="$logo_css_class" href="/web/guest/home" title="#language("go-to") $site_name">
+					<img alt="$logo_description" height="$site_logo_height" src="$site_logo" width="$site_logo_width" />
+				</a>
+
+				#if ($show_site_name)
+					<span class="site-name" title="#language("go-to") $site_name">
+						$site_name
+					</span>
+				#end
+			</h1>
+
+			<h2 class="page-title">
+				<span>$the_title</span>
+			</h2>
+			
+		</div>
+		
+		#if ($has_navigation || $is_signed_in)
+			#parse ("$full_templates_path/navigation.vm")
+		#end
+		
+	</header>
+
+	<div id="content">
+		<!--<nav class="site-breadcrumbs" id="breadcrumbs">
+			<h1>
+				<span>#language("breadcrumbs")</span>
+			</h1>
+
+			#breadcrumbs()
+		</nav>-->
+
+		#if ($selectable)
+			$theme.include($content_include)
+		#else
+			$portletDisplay.recycle()
+
+			$portletDisplay.setTitle($the_title)
+
+			$theme.wrapPortlet("portlet.vm", $content_include)
+		#end
+	</div>
+
+	<footer id="footer" role="contentinfo">
+		<div id="foot1"></div>
+		<div id="foot2"></div>
+		<div id="foot3"></div>
+		<div id="foot4"></div>
+		<div id="foot5"></div>
+		
+		<ul>
+			<li><a href="/web/guest/home">Home</a></li><li><a href="/web/guest/site-map">Site Map</a></li><li><a href="/web/guest/contact-us">Contact Us</a></li><li><a href="/web/guest/links">Links</a></li>
+#if (!$is_signed_in)
+<li><a href="$sign_in_url" rel="nofollow">Login</a></li>
+#else
+<li><a href="$sign_out_url" rel="nofollow">Logout</a></li>
+#end
+		</ul>
+	</footer>
+</div>
+
+$theme.include($body_bottom_include)
+
+</body>
+
+$theme.include($bottom_include)
+
+</html>

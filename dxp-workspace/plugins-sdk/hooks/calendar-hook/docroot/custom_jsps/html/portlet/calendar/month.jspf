@@ -1,0 +1,398 @@
+<%--
+/**
+ * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+--%>
+	<style>
+				.newAlldayclass td a{
+					text-decoration: none;
+				}
+				
+				.newAlldayclass td a:hover{
+					text-decoration: underline;
+				}
+				
+				.newAlldayclass td{
+					background-color: lightblue !important; 
+				}
+				
+				.portlet-calendar .calendar td td{
+					border-radius:5px;
+				}
+				</style>
+
+<%@page import="com.liferay.portal.kernel.util.Validator"%>
+<%@page import="java.util.Date"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.text.DateFormat"%>
+<%@page import="com.liferay.portal.kernel.util.ParamUtil"%>
+<%@page import="com.liferay.portal.kernel.util.StringUtil"%>
+<%
+Calendar cal = (Calendar)selCal.clone();
+
+cal.set(Calendar.DATE, 1);
+
+int month = cal.get(Calendar.MONTH);
+int year = cal.get(Calendar.YEAR);
+
+int maxDayOfMonth = cal.getActualMaximum(Calendar.DATE);
+int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+
+Format dateFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("MMMM, yyyy", locale);
+Format timeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("h:mma", locale);
+
+%>
+
+
+
+<div>
+	<div class="event-selector">
+		<c:choose>
+			<c:when test='<%= !enableKolEmethCalendar  %>'>
+				<%
+				String taglibOnChange = "location.href = '" + urlWithoutAnchor + "&" + renderResponse.getNamespace() + "month=" + selMonth + "&" + renderResponse.getNamespace() + "day=" + selDay + "&" + renderResponse.getNamespace() + "year=" + selYear + "&" + renderResponse.getNamespace() + "eventType=' + this.value + '" + urlAnchor + "';";
+				%>
+		
+				<aui:select changesContext="<%= true %>" label="" name="eventType" onChange="<%= taglibOnChange %>" title="events">
+					<aui:option label="all-events" value="" />
+		
+					<%
+					for (int i = 0; i < CalEventConstants.TYPES.length; i++) {
+					%>
+		
+						<aui:option label="<%= CalEventConstants.TYPES[i] %>" selected="<%= eventType.equals(CalEventConstants.TYPES[i]) %>" />
+		
+					<%
+					}
+					%>
+		
+				</aui:select>
+			</c:when>
+			<c:when test='<%= enableKolEmethCalendar %>'>
+			
+				<%@ include file="/html/portlet/calendar/categoryFilter.jspf" %>
+				
+			</c:when>
+		</c:choose>
+		
+	</div>
+	
+	<table class="date-selector">
+	<tr>
+		<td>
+			<a href="<%= urlWithoutAnchor %>&<portlet:namespace />month=<%= cal.get(Calendar.MONTH) - 1 %>&<portlet:namespace />day=<%= selDay %>&<portlet:namespace />year=<%= selYear %>&<portlet:namespace />selCategory=<%= HtmlUtil.escape(selCategory) %>&<portlet:namespace />eventType=<%= HtmlUtil.escape(eventType) + urlAnchor %>">
+			<img alt="<liferay-ui:message key="previous" />" border="0" src="<%= themeDisplay.getPathThemeImages() %>/arrows/01_left.png" />
+			</a>
+		</td>
+		<td>
+			<%= dateFormat.format(Time.getDate(cal)) %>
+		</td>
+		<td>
+			<a href="<%= urlWithoutAnchor %>&<portlet:namespace />month=<%= cal.get(Calendar.MONTH) + 1 %>&<portlet:namespace />day=<%= selDay %>&<portlet:namespace />year=<%= selYear %>&<portlet:namespace />selCategory=<%= HtmlUtil.escape(selCategory) %>&<portlet:namespace />eventType=<%= HtmlUtil.escape(eventType) + urlAnchor %>">
+			<img alt="<liferay-ui:message key="next" />" border="0" src="<%= themeDisplay.getPathThemeImages() %>/arrows/01_right.png" />
+			</a>
+		</td>
+	</tr>
+	</table>
+</div>
+
+<br />
+
+<div>
+	<c:if test="<%= CalendarPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_EVENT) %>">
+		<portlet:renderURL var="editEventURL">
+			<portlet:param name="struts_action" value="/calendar/edit_event" />
+			<portlet:param name="redirect" value="<%= currentURL %>" />
+			<portlet:param name="backURL" value="<%= currentURL %>" />
+			<portlet:param name="month" value="<%= String.valueOf(selMonth) %>" />
+			<portlet:param name="day" value="<%= String.valueOf(selDay) %>" />
+			<portlet:param name="year" value="<%= String.valueOf(selYear) %>" />
+		</portlet:renderURL>
+
+		<aui:button href="<%= editEventURL %>" value="add-event" />
+	</c:if>
+
+	<portlet:renderURL var="viewURL">
+		<portlet:param name="struts_action" value="/calendar/view" />
+		<portlet:param name="tabs1" value="<%= tabs1 %>" />
+		<portlet:param name="month" value="<%= String.valueOf(curMonth) %>" />
+		<portlet:param name="day" value="<%= String.valueOf(curDay) %>" />
+		<portlet:param name="year" value="<%= String.valueOf(curYear) %>" />
+		<portlet:param name="selCategory" value="<%= selCategory %>" />
+		<portlet:param name="eventType" value="<%= HtmlUtil.escape(eventType) %>" />
+	</portlet:renderURL>
+
+	<c:if test="<%= (curMonth != selMonth) || (curYear != selYear) %>">
+		<aui:button href="<%= viewURL %>" value="current-month" />
+	</c:if>
+</div>
+
+<br />
+
+<table class="calendar">
+<thead>
+	<tr class="portlet-section-header results-header">
+
+		<%
+		for (int i = 0; i < 7; i++) {
+			int daysIndex = (selCal.getFirstDayOfWeek() + i - 1) % 7;
+		%>
+
+			<th align="center" height="25" width="<%= (i == 0 || i == 6) ? "15" : "14" %>%">
+				<%= LanguageUtil.get(pageContext, days[daysIndex]) %>
+			</th>
+
+		<%
+		}
+		%>
+
+	</tr>
+</thead>
+<tbody>
+	<tr>
+
+		<%
+		if (((selCal.getFirstDayOfWeek()) == Calendar.MONDAY)) {
+			if (dayOfWeek == 1) {
+				dayOfWeek += 6;
+			}
+			else {
+				dayOfWeek --;
+			}
+		}
+
+		for (int i = 1; i < dayOfWeek; i++) {
+		%>
+
+			<td height="100"></td>
+
+		<%
+		}
+
+		for (int i = 1; i <= maxDayOfMonth; i++) {
+			if (dayOfWeek > 7) {
+		%>
+
+				</tr>
+				<tr>
+
+			<%
+				dayOfWeek = 1;
+			}
+
+			dayOfWeek++;
+
+			Calendar tempCal = (Calendar)selCal.clone();
+
+			tempCal.set(Calendar.MONTH, month);
+			tempCal.set(Calendar.DATE, i);
+			tempCal.set(Calendar.YEAR, year);
+
+			String className = StringPool.BLANK;
+
+			if ((tempCal.get(Calendar.MONTH) == curMonth) &&
+				(tempCal.get(Calendar.DATE) == curDay) &&
+				(tempCal.get(Calendar.YEAR) == curYear)) {
+
+				className = "current-day";
+			}
+			else if ((tempCal.get(Calendar.MONTH) == selMonth) &&
+					 (tempCal.get(Calendar.DATE) == selDay) &&
+					 (tempCal.get(Calendar.YEAR) == selYear)) {
+
+				className = "selected-day";
+			}
+			%>
+
+			<td class="lfr-top <%= className %>" height="100">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td>
+						<table border="0" cellpadding="4" cellspacing="0" width="100%">
+						<tr>
+							<td>
+								<a href="<portlet:renderURL><portlet:param name="struts_action" value="/calendar/view" /><portlet:param name="tabs1" value="day" /><portlet:param name="month" value="<%= String.valueOf(month) %>" /><portlet:param name="day" value="<%= String.valueOf(i) %>" /><portlet:param name="year" value="<%= String.valueOf(year) %>" /></portlet:renderURL>"><%= i %></a>
+								<div style="display:none;">
+									<c:if test="<%= tempCal.get(Calendar.DAY_OF_WEEK) == cal.getFirstDayOfWeek() %>">
+										[<a href="<portlet:renderURL><portlet:param name="struts_action" value="/calendar/view" /><portlet:param name="tabs1" value="week" /><portlet:param name="month" value="<%= String.valueOf(month) %>" /><portlet:param name="day" value="<%= String.valueOf(i) %>" /><portlet:param name="year" value="<%= String.valueOf(year) %>" /></portlet:renderURL>"><liferay-ui:message key="week" /> <%= tempCal.get(Calendar.WEEK_OF_YEAR) %></a>]
+									</c:if>
+								</div>
+							</td>
+							<td align="right">
+								<c:if test="<%= CalendarPermission.contains(permissionChecker, scopeGroupId, ActionKeys.ADD_EVENT) %>">
+									<a href="<portlet:renderURL><portlet:param name="struts_action" value="/calendar/edit_event" /><portlet:param name="redirect" value="<%= currentURL %>" /><portlet:param name="backURL" value="<%= currentURL %>" /><portlet:param name="month" value="<%= String.valueOf(tempCal.get(Calendar.MONTH)) %>" /><portlet:param name="day" value="<%= String.valueOf(tempCal.get(Calendar.DATE)) %>" /><portlet:param name="year" value="<%= String.valueOf(tempCal.get(Calendar.YEAR)) %>" /></portlet:renderURL>">
+									<img alt="<%= LanguageUtil.get(pageContext, "new-event") %>" border="0" src="<%= themeDisplay.getPathThemeImages() %>/arrows/01_plus.png" title="<liferay-ui:message key="new-event" />" />
+									</a>
+								</c:if>
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+
+				<%
+				
+				
+				List<CalEvent> events = CalEventServiceUtil.getEvents(scopeGroupId, tempCal, eventTypes);
+				/**********************************Start cloning Repeating events to sort list ********************************************************/
+				List<CalEvent> allCalEvents = new ArrayList<CalEvent>();
+				 for(int j=0; j < events.size();j++){
+						CalEvent currentEvent = events.get(j);
+						Date startDate = null;
+						if(currentEvent.isRepeating()){
+							CalEvent cloneCurrentEvent =(CalEvent) currentEvent.clone();
+
+							Calendar repeatingEventCal = CalendarFactoryUtil.getCalendar(timeZone, locale);
+							repeatingEventCal.setTime(currentEvent.getStartDate());
+							
+							repeatingEventCal.set(Calendar.MONTH, tempCal.get(Calendar.MONTH));
+							repeatingEventCal.set(Calendar.YEAR, tempCal.get(Calendar.YEAR));
+							repeatingEventCal.set(Calendar.DATE, i);
+																
+							cloneCurrentEvent.setStartDate(repeatingEventCal.getTime());
+							
+								allCalEvents.add(cloneCurrentEvent);
+												
+						}else{
+							allCalEvents.add(currentEvent);
+						}
+				}
+				 /********************************** End cloning Repeating events to sort list ********************************************************/
+				events = ListUtil.sort(allCalEvents, new EventTimeComparator(timeZone, locale));
+				
+				for (int j = 0; j < events.size(); j++) {
+					CalEvent event = (CalEvent)events.get(j);
+
+					event = event.toEscapedModel();
+
+					boolean allDay = CalUtil.isAllDay(event, timeZone, locale);
+					/********************************** Condition adding star ********************************************************/
+					boolean noDisplayEvent = false;
+					try{
+					String[] noEventDates =  (event.getExpandoBridge().getAttribute("no-event-date-value")).toString().split(",");
+					
+					for(int ii = 0 ; ii < noEventDates.length ; ii++){	
+						if(Validator.isNotNull(noEventDates[ii])){
+							DateFormat formatter = new SimpleDateFormat("mm/dd/yyyy"); 
+							Date date = (Date)formatter.parse(noEventDates[ii]);
+							String noEventDay = noDisplayDayFormat.format(date).toString();
+							String noEventMonth = noDisplayMonthFormat.format(date).toString();
+							String noEventYear = noDisplayYearFormat.format(date).toString();
+							int monthIncByOne = month + 1;
+								if(noEventDay.equals(String.valueOf(i).format("%02d", i))
+										&& noEventMonth.equals(String.valueOf(monthIncByOne).format("%02d", monthIncByOne))
+										&& noEventYear.equals(String.valueOf(year))){
+									noDisplayEvent = true;
+								}
+						}
+					}}catch(Exception exception){
+						exception.getMessage();
+					}
+					/********************************** Condition adding end ********************************************************/
+					className = "portlet-section-body results-row";
+
+					if (MathUtil.isEven(j)) {
+						className = "portlet-section-alternate results-row alt";
+					}
+					if(!noDisplayEvent){ //if contidtion add to not to display repeted event on specific day
+				%>
+			
+					<tr class='<%= allDay ? className+" newAlldayclass" : className %>'>
+						<td >
+							<c:if test="<%= !allDay %>">
+								<c:choose>
+									<c:when test="<%= event.isTimeZoneSensitive() %>">
+										<%= dateFormatTime.format(Time.getDate(event.getStartDate(), timeZone)) %>
+									</c:when>
+									<c:otherwise>
+										<%= dateFormatTime.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())) %>
+									</c:otherwise>
+								</c:choose>
+								
+							</c:if>
+							<a href="<portlet:renderURL><portlet:param name="struts_action" value="/calendar/view_event" /><portlet:param name="redirect" value="<%= currentURL %>" /><portlet:param name="eventId" value="<%= String.valueOf(event.getEventId()) %>" /></portlet:renderURL>">
+							<%= StringUtil.shorten(event.getTitle(), 80) %>
+							</a>
+						</td>
+					</tr>
+				<%
+					}
+				}//endif contidtion add to not to display repeted event on specific day
+				%>
+
+				</table>
+			</td>
+
+		<%
+		}
+
+		for (int i = 7; i >= dayOfWeek; i--) {
+		%>
+			<td height="100"></td>
+
+		<%
+		}
+		%>
+
+	</tr>
+</tbody>
+</table>
+
+<%
+PortalUtil.setPageSubtitle(dateFormat.format(Time.getDate(cal)), request);
+%>
+
+<script type="text/javascript">
+var namespace = "<portlet:namespace/>";
+var currentpath = '<%=urlWithoutAnchor.toString() %>';
+	function getSubEvents(obj) {
+
+		AUI()
+				.use(
+						'node',
+						function(A) {
+							var elementValue = A.one("#" + obj.id).val();
+							if(elementValue == "all events"){
+								location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=";
+							}else{
+								if(A.one("#" + elementValue) != null){
+									var sel = A.one("#" + elementValue).val();
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel ;
+								}else{
+									location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' +  "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + elementValue ;
+								}
+							}
+						});
+	}
+	
+	
+	function getSelSubEvents(obj){
+		var elementValue = '<%=selCategory%>';
+		AUI()
+		.use(
+				'node',
+				function(A) {
+					var sel = A.one("#" + obj.id).val();
+					if(A.one("#" + sel) != null){
+						sel = A.one("#" + sel).val();
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType="+elementValue+","+sel;
+					}else{
+						location.href = currentpath + "&" + namespace + "month=" + '<%=selMonth%>' + "&" + namespace + "day=" + '<%=selDay%>' + "&" + namespace + "year=" + '<%=selYear%>' + "&"+ namespace + "selCategory=" + elementValue + "&" + namespace + "eventType=" + sel;
+					}
+					
+				});
+		
+	}
+</script>
+
+	
